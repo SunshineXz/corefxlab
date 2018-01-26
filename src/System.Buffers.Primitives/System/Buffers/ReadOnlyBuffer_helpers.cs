@@ -10,7 +10,7 @@ namespace System.Buffers
     public readonly partial struct ReadOnlyBuffer<T>
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool TryGetBuffer(Position begin, Position end, out ReadOnlyMemory<T> data, out Position next)
+        internal static bool TryGetBuffer(SequenceIndex begin, SequenceIndex end, out ReadOnlyMemory<T> data, out SequenceIndex next)
         {
             var segment = begin.Segment;
 
@@ -44,7 +44,7 @@ namespace System.Buffers
                         }
                         else
                         {
-                            next = new Position(nextSegment, 0);
+                            next = new SequenceIndex(nextSegment, 0);
                         }
                     }
 
@@ -81,12 +81,12 @@ namespace System.Buffers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Position Seek(Position begin, Position end, int bytes, bool checkEndReachable = true)
+        internal static SequenceIndex Seek(SequenceIndex begin, SequenceIndex end, int bytes, bool checkEndReachable = true)
         {
-            Position cursor;
+            SequenceIndex cursor;
             if (begin.Segment == end.Segment && end.Index - begin.Index >= bytes)
             {
-                cursor = new Position(begin.Segment, begin.Index + bytes);
+                cursor = new SequenceIndex(begin.Segment, begin.Index + bytes);
             }
             else
             {
@@ -97,13 +97,13 @@ namespace System.Buffers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Position Seek(Position begin, Position end, long bytes, bool checkEndReachable = true)
+        internal static SequenceIndex Seek(SequenceIndex begin, SequenceIndex end, long bytes, bool checkEndReachable = true)
         {
-            Position cursor;
+            SequenceIndex cursor;
             if (begin.Segment == end.Segment && end.Index - begin.Index >= bytes)
             {
                 // end.Index >= bytes + Index and end.Index is int
-                cursor = new Position(begin.Segment, begin.Index + (int)bytes);
+                cursor = new SequenceIndex(begin.Segment, begin.Index + (int)bytes);
             }
             else
             {
@@ -114,9 +114,9 @@ namespace System.Buffers
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static Position SeekMultiSegment(Position begin, Position end, long bytes, bool checkEndReachable)
+        private static SequenceIndex SeekMultiSegment(SequenceIndex begin, SequenceIndex end, long bytes, bool checkEndReachable)
         {
-            Position result = default;
+            SequenceIndex result = default;
             var foundResult = false;
             var current = begin;
             while (TryGetBuffer(begin, end, out var memory, out begin))
@@ -131,7 +131,7 @@ namespace System.Buffers
                     if (memory.Length > bytes ||
                        (memory.Length == bytes && begin.Segment == null))
                     {
-                        result = new Position(current.Segment, current.Index + (int)bytes);
+                        result = new SequenceIndex(current.Segment, current.Index + (int)bytes);
                         foundResult = true;
                         if (!checkEndReachable)
                         {
@@ -153,7 +153,7 @@ namespace System.Buffers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static long GetLength(Position begin, Position end)
+        private static long GetLength(SequenceIndex begin, SequenceIndex end)
         {
             if (begin.Segment == null)
             {
@@ -192,7 +192,7 @@ namespace System.Buffers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void BoundsCheck(Position end, Position newCursor)
+        private static void BoundsCheck(SequenceIndex end, SequenceIndex newCursor)
         {
             switch (end.Segment)
             {
