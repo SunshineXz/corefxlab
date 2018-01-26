@@ -9,6 +9,7 @@ namespace System.IO.Pipelines
 {
     public class PipeOptions
     {
+        public static PipeOptions Default { get; } = new PipeOptions();
 
         public PipeOptions(
             MemoryPool<byte> pool = null,

@@ -64,7 +64,7 @@ namespace System.IO.Pipelines
 
         internal long Length => _length;
 
-        public Pipe() : this(new PipeOptions())
+        public Pipe() : this(PipeOptions.Default)
         {
         }
 
